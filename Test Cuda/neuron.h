@@ -1,63 +1,30 @@
 #pragma once
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "thrust\device_vector.h"
 #include "thrust\host_vector.h"
 
+#include "thrust\random\normal_distribution.h"
+#include "thrust\random\linear_congruential_engine.h"
+
+#include "sm_35_atomic_functions.h"
+
 #include <stdio.h>
 #include <iostream>
 #include <vector>
 
+#include "idx.h"
 #include "main.h"
 
 using namespace std;
 using namespace thrust;
 
-
-class neuron;
-class neural_net;
-
-class Axons
-{
-public:
-	neuron* n;
-	double weight;
-	CUDA_CALLABLE_MEMBER Axons()
-	{
-		weight = 22;
-	}
-	CUDA_CALLABLE_MEMBER ~Axons()
-	{
-
-	}
-};
-
-class neural_layer
-{
-public:
-	int r_done;
-	int e_done;
-	int w_done;
-
-	CUDA_CALLABLE_MEMBER neural_layer()
-	{
-		r_done = 0;
-		e_done = 0;
-		w_done = 0;
-	}
-	CUDA_CALLABLE_MEMBER ~neural_layer()
-	{
-		
-	}
-};
-
 class neuron
 {
 public:
 	int tmp;
-	int r_done;
-	int e_done;
-	int w_done;
+	int regularization;
 
 	double output;
 	double sum;
@@ -71,51 +38,53 @@ public:
 	int in_no;
 	int out_no;
 
-	neural_layer* nl;
-
 	double learning_rate;
 
-	CUDA_CALLABLE_MEMBER void link(neuron* n, double weight)
-	{
-		input_weight[in_no] = 1;
-		input_n[in_no] = n;
+	CUDA_CALLABLE_MEMBER void link(neuron* n, double weight);
 
-		n->output_weight[n->out_no] = weight;
-		n->output_n[n->out_no] = this;
-		++n->out_no;
-	}
+	CUDA_CALLABLE_MEMBER neuron();
+	CUDA_CALLABLE_MEMBER neuron(int _regularization);
 
-	CUDA_CALLABLE_MEMBER neuron()
-	{
-		in_no = 0;
-		out_no = 0;
-		r_done = 0;
-		w_done = 0;
-		e_done = 0;
-		tmp = 0;
-		learning_rate = 0.005;
-	}
+	CUDA_CALLABLE_MEMBER void init_in(int in);
 
-	CUDA_CALLABLE_MEMBER void init_in(int in)
-	{
-		input_weight = new double[in];
-		input_n = new neuron*[in];
-	}
+	CUDA_CALLABLE_MEMBER void init_out(int out);
 
-	CUDA_CALLABLE_MEMBER void init_out(int out)
-	{
-		output_weight = new double[out];
-		output_n = new neuron*[out];
-	}
-
-	CUDA_CALLABLE_MEMBER ~neuron()
-	{
-
-	}
+	CUDA_CALLABLE_MEMBER ~neuron();
 };
 
-class neural_net
+class NeuralNet_FF
 {
 public:
-	int *layer_data;
+	int numLayers;
+	vector<neuron*>	Layers;
+	vector<int> layerSz;
+	vector<int> layerSz_2r;
+
+	int epoch;
+
+	NeuralNet_FF(int n, int* layout, bool auto_link);
+
+	void Linker(int preL, int postL);
+};
+
+class NeuralProcessor
+{
+public:
+	int epoch;
+	bool trainer;
+	int sampleSize;
+
+	idx_content_img* img;
+	uint8_t* lbl;
+	int* data;
+	int* _out;
+	double* softmax_sum;
+
+	NeuralNet_FF* nn;
+
+	NeuralProcessor(NeuralNet_FF* _nn, idx_img* _img, idx_labels* _lbl, int _epoch, int data_sz, bool is_trainer);
+
+	void Run();
+
+	int Results();
 };

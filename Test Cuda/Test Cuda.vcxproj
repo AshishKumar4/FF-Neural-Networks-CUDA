@@ -164,7 +164,11 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="dot_adder.cu" />
+    <CudaCompile Include="idx.cu" />
     <CudaCompile Include="kernel.cu" />
+    <CudaCompile Include="neuron.cu" />
+    <CudaCompile Include="threads.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="idx.h" />
