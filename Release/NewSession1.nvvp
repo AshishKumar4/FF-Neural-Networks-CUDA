@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<session version="2" name="NewSession1.nvvp" hscale="1.0E-6" normalize="false">
+<timelineoptions enabletimerange="false" start="-1" end="-1" numsegmentsuvm="100" uvmisegmentenabled="true"/>
+<executable file="C:\Users\Ashish Kumar SIngh\Desktop\Cuda Neural Networks\Release\NeuralNetworks.exe" cwd="C:\Users\Ashish Kumar SIngh\Desktop\Cuda Neural Networks\Release" profileonstart="true" concurrentkernels="true" apitrace="true" environmentprofiling="false" uvmprofiling="true" openaccprofiling="true" threadtracking="false" devicebuffersize="8" cdpbuffersize="8"><envs></envs><multiProcess type="0" rumMPS="false"/></executable>
+<expert><columnprops></columnprops>
+</expert>
+<analysis guided="true"><visitedstages><stage name="KERNELS"/><stage name="TIMELINE"/><stage name="NVLINK_TOPOLOGY"/></visitedstages></analysis>
+<expertsystem current="APPLICATION"><visited><stage name="INTRO"/><stage name="APPLICATION"/></visited></expertsystem>
+<vruler width="200"/>
+<hruler>
+</hruler>
+<timelinestate>
+</timelinestate>
+</session>

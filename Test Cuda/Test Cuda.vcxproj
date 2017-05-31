@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{22634266-DBBC-4E6B-A031-3D8328357398}</ProjectGuid>
-    <RootNamespace>Test_Cuda</RootNamespace>
+    <RootNamespace>NeuralNetworks</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <ProjectName>NeuralNetworks</ProjectName>
   </PropertyGroup>

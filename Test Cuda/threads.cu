@@ -25,10 +25,18 @@ __global__ void Input_Layer_Thread(neuron* n, idx_content_img* im, int index)
 	//printf("Bx ");
 }
 
+__global__ void Input_Layer_Thread_vec(neuron* n, int* in_vec, int in_sz, int index)
+{
+	//printf("Ax");
+	int id = blockIdx.x + threadIdx.x;
+	n[id].output = ((in_vec[(id*(int)powf(2, in_sz)) + index]));
+	//printf("<%f,%d>", n[id].output, (id*(int)powf(2, in_sz)) + index);
+}
+
 __global__ void Output_Layer_SumGenerator_Thread(neuron* n)
 {
 	int id = blockIdx.x + threadIdx.x;
-	n[id].sum = 0;
+	n[id].sum = -n[id].bias;
 	for (int j = 0; j < n[id].in_no; j++)
 	{
 		n[id].sum += n[id].input_n[j]->output * n[id].input_weight[j];
@@ -79,6 +87,23 @@ __global__ void Output_Layer_Thread(neuron* n, uint8_t* values, int index, doubl
 	}
 }
 
+__global__ void Output_Layer_Thread_vec(neuron* n, int* out_vec, int out_sz, int index, double* tmp)
+{ 
+	double d = *tmp;
+	int id = blockIdx.x + threadIdx.x;
+	n[id].output = tanhf(n[id].sum);//(tanhf(n[id].sum) + 1) / 2;//powf(12, n[id].sum) / d;
+	if (out_vec[(id*(int)powf(2, out_sz)) + index] == 1)
+	{
+		n[id].error = n[id].output - 1;// -(double)out_vec[(id*(int)powf(2, out_sz)) + index];
+	}
+	else
+	{
+		n[id].error = n[id].output;
+	}
+	n[id].error *= (1 - n[id].output*n[id].output);//n[id].output*(1 - n[id].output);
+	printf(" {%f:%d:%f}", n[id].output, out_vec[(id*(int)powf(2, out_sz)) + index], n[id].error);
+}
+
 __global__ void Output_Layer_Test_Thread(neuron* n, uint8_t* values, int index, int* output)
 {
 	int digit = values[index];
@@ -88,7 +113,7 @@ __global__ void Output_Layer_Test_Thread(neuron* n, uint8_t* values, int index, 
 	double d = 0;
 	for (int i = 0; i < 10; i++)
 	{
-		n[i].sum = 0;
+		n[i].sum = -n[i].bias;
 		for (int j = 0; j < n[i].in_no; j++)
 		{
 			n[i].sum += n[i].input_n[j]->output * n[i].input_weight[j];
@@ -112,6 +137,39 @@ __global__ void Output_Layer_Test_Thread(neuron* n, uint8_t* values, int index, 
 		*output = *output + 1;
 	}
 	else printf("\n");
+}
+
+__global__ void Output_Layer_Test_Thread_vec(neuron* n, int* out_vec, int out_sz, int index, int* output)
+{
+	int _i = 0;
+	double opp = 0;
+	/*Softmax Output*/
+	double d = 0;
+	for (int i = 0; i < out_sz; i++)
+	{
+		n[i].sum = -n[i].bias;
+		for (int j = 0; j < n[i].in_no; j++)
+		{
+			n[i].sum += n[i].input_n[j]->output * n[i].input_weight[j];
+		}
+		d += powf(12, n[i].sum);
+	}
+	for (int i = 0; i < out_sz; i++)
+	{
+		n[i].output = tanhf(n[i].sum);//(tanhf(n[i].sum) + 1) / 2;//powf(12, n[i].sum) / d;
+		if (out_vec[(i*(int)powf(2, out_sz)) + index] - n[i].output == 0)
+		{
+			++_i;
+		}
+		printf("[%f]<%d> ", n[i].output, out_vec[(i*(int)powf(2, out_sz)) + index]);
+	}
+
+	if (_i == out_sz)
+	{
+		printf("%d=>", _i);
+		*output = *output + 1;
+	}
+	else printf("\n{%d}", _i);
 }
 
 __global__ void dot_product_FeedForward(neuron* n, int r_b)
@@ -203,6 +261,7 @@ __global__ void DeltaWeightPropogation(neuron* n)
 	//printf("Dps");
 	int id = blockIdx.x + threadIdx.x;
 	neuron* self = &n[id];
+	self->bias += self->learning_rate* ((self->error));
 	for (int i = 0; i < self->in_no; i++)
 	{
 		self->input_weight[i] -= self->learning_rate * ((self->input_n[i]->output * self->error) - (self->input_weight[i] * self->regularization));

@@ -29,6 +29,7 @@ public:
 	double output;
 	double sum;
 	double error;
+	double bias;
 
 	double* input_weight;
 	neuron** input_n;
@@ -64,6 +65,10 @@ public:
 
 	NeuralNet_FF(int n, int* layout, bool auto_link);
 
+	void learn();
+
+	void ForwardProp();
+
 	void Linker(int preL, int postL);
 };
 
@@ -83,6 +88,36 @@ public:
 	NeuralNet_FF* nn;
 
 	NeuralProcessor(NeuralNet_FF* _nn, idx_img* _img, idx_labels* _lbl, int _epoch, int data_sz, bool is_trainer);
+
+	void Run();
+
+	int Results();
+};
+
+class NeuralProcessor_MNIST : public NeuralProcessor 
+{
+
+};
+
+class NeuralProcessor_vec
+{
+public:
+	int epoch;
+	bool trainer;
+
+	int* in_vec;
+	int* out_vec;
+
+	int in_sz;
+	int out_sz;
+
+	int* data;
+	int* _out;
+	double* softmax_sum;
+
+	NeuralNet_FF* nn;
+
+	NeuralProcessor_vec(NeuralNet_FF* _nn, vector<int> _in_vec, vector<int> _out_vec, int _in_sz, int _out_sz, int _epoch, bool is_trainer);
 
 	void Run();
 
